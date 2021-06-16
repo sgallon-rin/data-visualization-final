@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test China Map</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v5.js"></script>
+    <!--    <script src="https://unpkg.com/topojson@3"></script>-->
+    <script type="text/javascript" src="../js/colorlegend.js"></script>
+</head>
+<style>
+</style>
+<body>
+<h1>China Map</h1>
+<script type="text/javascript">
+
+    //定义宽和高
+    var width = 500 * 2;
+    var height = 300 * 2;
+
+    const zoom = d3.zoom()
+        .scaleExtent([1, 8])
+        .on("zoom", zoomed);
+
+    //定义生成器, 并将图形从球面投影到平面
+    let projection = d3.geoMercator()
+        .center([107, 31])
+        .scale(height * 0.9)
+        .translate([width / 2, height / 2]);
+
+    let path = d3.geoPath()
+        .projection(projection);
+
+    //定义svg元素
+    var svg = d3.select("body")
+        .append("svg")
+        // .attr("width", width)
+        // .attr("height", height)
+        .attr("viewBox", [0, 0, width, height])
+        .attr("transform", d3.zoomIdentity);
+
+    // let color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    let file = "../data/ChinaMap.json";
+
+    d3.json(file).then(function (geo) {
+        console.log(geo);
+        let Province = svg.append("g")
+            .attr("cursor", "pointer")
+            .attr("stroke", "#AAA")//设置边线颜色
+            .attr("stroke-width", 0.5)//设置边线宽度
+            .attr("stroke-linejoin", "round")
+            .selectAll("path")
+            .data(geo.features)
+            .enter()
+            .append("path")
+            .attr("class", "province")
+            .attr("fill", "#FFF")
+            // .style("fill", function (d, i) {
+            //     return 'rgba(0,' + parseFloat(255 - Math.random() * 50) + ',' + parseFloat(255 - Math.random() * 100) + ')';
+            // })
+            .attr("d", path);
+        // }).then(function () {
+        //     var peking = [116.3, 39.9];
+        //     var proPeking = projection(peking);
+        //     console.log(proPeking)
+        //     svg.append("circle")
+        //         .attr("class", "point")
+        //         .attr("cx", proPeking[0])
+        //         .attr("cy", proPeking[1])
+        //         .attr("r", 80);
+    });
+
+    let pollution_file = "../data/pollution_20130101.json"
+
+    d3.json(pollution_file).then(function (data) {
+        console.log(data);
+        let color = d3.scaleSequential(d3.extent(data, d => d.pm25), d3.interpolateYlOrRd)
+        svg.selectAll("circle")
+            .data(data)
+            .enter().append("g")
+            .attr("transform", function (d) {
+                //计算标注点的位置
+                var coor = projection([d.long, d.lat]); //经纬度的投影
+                return "translate(" + coor[0] + "," + coor[1] + ")";
+            })
+            .append("circle")
+            // .attr("cx", function (d) {
+            //     return d.long;
+            // })
+            // .attr("cy", function (d) {
+            //     return d.lat;
+            // })
+            .attr("r", 0.7)
+            .attr("fill", d => color(d.pm25))
+            .attr("opacity", 0.9);
+
+        legend({
+            color: color,
+            // title: "Temperature (°F)"
+        })
+    });
+
+    svg.call(zoom);
+
+    function zoomed() {
+        svg.attr("transform", d3.event.transform);
+    }
+
+
+</script>
+</body>
+</html>

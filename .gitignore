@@ -6,6 +6,13 @@
 **/data/*
 **/log/*
 **/tmp/*
+**/test/*
+**/handin/*
+*.zip
+*.mp4
+*.pptx
+!**/public/data/*
+!**/public/test/*
 
 # local env files
 .env.local
