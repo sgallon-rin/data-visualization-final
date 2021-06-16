@@ -46,8 +46,9 @@ def read_root():
 #     return {"item_id": item_id, "q": q}
 
 
-@app.get("/api/pollution_data_daily")
-async def read_pollution_data_daily(date: str = "20130101", lat: Optional[float] = None, long: Optional[float] = None):
+@app.get("/api/pollution_data/daily")
+async def read_pollution_data_daily(date: str = "2013-01-01", lat: Optional[float] = None,
+                                    long: Optional[float] = None):
     query_dict = dict()
     if lat and long:
         query_dict["lat"] = lat
@@ -61,7 +62,7 @@ async def read_pollution_data_daily(date: str = "20130101", lat: Optional[float]
     return {"result_len": len(records), "result": records}
 
 
-@app.get("/api/pollution_data_place")
+@app.get("/api/pollution_data/place")
 async def read_pollution_data_place(lat: float, long: float, startdate: Optional[str] = None,
                                     enddate: Optional[str] = None):
     query_dict = dict()
@@ -70,6 +71,20 @@ async def read_pollution_data_place(lat: float, long: float, startdate: Optional
     if startdate and enddate:
         startdate = parser.parse(startdate)
         enddate = parser.parse(enddate)
+        query_dict["date"] = {"$gte": startdate, "$lte": enddate}
+    records = read_with_condition_from(MONGO_URI, MONGO_DB_NAME, MONGO_COLLECTION_NAME,
+                                       query_dict=query_dict, projection_dict={"_id": 0})
+    return {"result_len": len(records), "result": records}
+
+
+@app.get("/api/pollution_data/place/year_interval")
+async def read_pollution_data_place(lat: float, long: float, startyear: str, endyear: str):
+    query_dict = dict()
+    query_dict["lat"] = lat
+    query_dict["long"] = long
+    if startyear and endyear:
+        startdate = parser.parse(startyear + "-01-01")
+        enddate = parser.parse(endyear + "-12-31")
         query_dict["date"] = {"$gte": startdate, "$lte": enddate}
     records = read_with_condition_from(MONGO_URI, MONGO_DB_NAME, MONGO_COLLECTION_NAME,
                                        query_dict=query_dict, projection_dict={"_id": 0})
