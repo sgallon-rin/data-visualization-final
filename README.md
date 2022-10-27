@@ -1,6 +1,8 @@
 # data-visualization-final
 FDU DATA130012 Data Visualization - final project | 数据可视化期末project
 
+I referred to the implementation in https://github.com/reval59/HKUST-VisLab-Coding-Challenge
+
 ## Description | 说明
 The topic I choose is China pollution/污染物追踪（大气污染数据）, data source:
 
